@@ -2,6 +2,7 @@
 title: UDFs for Geometric Types
 layout: post
 ---
+
 DataStax Enterprise (DSE) contains support for geometric data types - PointType, LineStringPoint, PolygonType - 
 which can be really useful.
 
