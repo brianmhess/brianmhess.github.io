@@ -371,7 +371,7 @@ We now look at the first two nodes in the list (nodes 2 and 3) and order them so
 The next call would have an identical path as above, but would have a different random permutation of replicas (for illustrative purposes, let’s assume the same permutation is used, namely (3,1,2)) and the non-replicas would rotate by one more, resulting in:
 
 | 2 | 3 | 1 | 5 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 
 #### BasicLoadBalancingPolicy
