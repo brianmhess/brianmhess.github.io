@@ -1,6 +1,7 @@
 ---
 title: UDFs for Geometric Types
 layout: post
+comments: true
 tags:
  - Cassandra
 ---
