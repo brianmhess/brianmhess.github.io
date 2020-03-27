@@ -12,7 +12,7 @@ One thing that is not included in DSE is some functions to operate on those data
 This blog post will demonstrate some UDFs we can write to provide some basic functions.
 ---
 
-## PointType Functions
+## PointType Functions 
 
 The PointType represents a 2-dimensional point, such as a latitude and longitude. 
 You can create a table with a PointType column like so:
