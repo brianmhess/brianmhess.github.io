@@ -44,13 +44,14 @@ In the RoundRobinPolicy, the nodes are put in a canonical order and then the lis
 
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|---|
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 
 This would choose node 1 as the coordinator. If there was a retry or speculative execution, the second attempt would use node 2, and so on.
 
 For the next query, the order would then be:
 
-| 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 1 |
 |---|---|---|---|---|---|---|---|---|---|
+| 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 1 |
 
 This would choose node 2 as the coordinator. If there was a retry or speculative execution, the second attempt would use node 3, and so on. Note that regardless of whether there was a retry or a speculative execution on the first query, the second query will start at node 2.
 
