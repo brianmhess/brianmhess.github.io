@@ -3,7 +3,6 @@ title: UDFs for Geometric Types
 layout: post
 tags:
  - Cassandra
-excerpt_separator: <!--excerpt-->
 ---
 
 DataStax Enterprise (DSE) contains support for geometric data types - PointType, LineStringPoint, PolygonType - 
@@ -11,6 +10,7 @@ which can be really useful.
 
 One thing that is not included in DSE is some functions to operate on those data types. 
 This blog post will demonstrate some UDFs we can write to provide some basic functions.
+
 <!--excerpt-->
 
 ## PointType Functions 

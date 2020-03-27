@@ -15,4 +15,6 @@ highlighter: rouge
 permalink: pretty
 #pygments: true
 
+excerpt_separator: "<!--excerpt-->"
+
 gems: [jekyll-paginate, kramdown, rouge, jekyll-feed]
