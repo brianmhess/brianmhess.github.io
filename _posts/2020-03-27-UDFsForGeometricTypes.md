@@ -12,6 +12,7 @@ One thing that is not included in DSE is some functions to operate on those data
 This blog post will demonstrate some UDFs we can write to provide some basic functions.
 ---
 
+
 ## PointType Functions 
 
 The PointType represents a 2-dimensional point, such as a latitude and longitude. 
@@ -116,7 +117,7 @@ cqlsh:test> SELECT pkey, geopt, point_x(geopt) AS x, point_y(geopt) AS y FROM te
 (3 rows)
 ```
 
-Another approach
+### Another approach
 
 We could tweak this approach slightly and convert the `'PointType'` into a user-defined type 
 that would allow us to reference the internal x and y coordinates directly. To do that, we 
