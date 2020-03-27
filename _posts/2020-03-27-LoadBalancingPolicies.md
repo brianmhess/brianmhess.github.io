@@ -42,16 +42,17 @@ Some Load Balancing Policies are chainable, that is, they will use a “child”
 
 In the RoundRobinPolicy, the nodes are put in a canonical order and then the list is rotated by one on every query. So, for the first query, the order might look like:
 
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
-|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+```
+   1    2    3    4    5    6    7    8    9    10   
+```
 
 This would choose node 1 as the coordinator. If there was a retry or speculative execution, the second attempt would use node 2, and so on.
 
 For the next query, the order would then be:
 
-|---|---|---|---|---|---|---|---|---|---|
-| 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 1 |
+```
+   2    3    4    5    6    7    8    9    10    1   
+```
 
 This would choose node 2 as the coordinator. If there was a retry or speculative execution, the second attempt would use node 3, and so on. Note that regardless of whether there was a retry or a speculative execution on the first query, the second query will start at node 2.
 
@@ -66,15 +67,17 @@ One interesting thing to consider is what happens when using the LOCAL consisten
 
 In the DCAwareRoundRobinPolicy, the nodes are put in a canonical order just like in the RoundRobinPolicy, but there is a “local data center” configuration parameter and only nodes in that local data center will ever be chosen as coordinator. So, if the local data center was “DC1”, for example, for the first query, the order might look like:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+  1    2    3    4    5 
+```
 
 This list would only have 5 options in it, namely the nodes from DC1.
 
 For the next query, the order would then be:
 
-| 2 | 3 | 4 | 5 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    4    5    1                            
+```
 
 The upside here over the RoundRobinPolicy is that only nodes in the local data center will be used, so if properly configured the client is never communicating with a coordinator across the WAN.
 
@@ -89,24 +92,27 @@ ChainableLoadBalancingPolicy is an interface that specifies a category of Load B
 #### WhiteListPolicy
 
 The WhiteListPolicy is a simple policy where you can specify which nodes are allowed to be considered as coordinators by explicitly setting them when creating the policy. The WhiteListPolicy has a child policy and the order of that nodes is not altered, but any nodes not in the white list will be removed. For example, if we use the DCAwareRoundRobinPolicy with DC1 and wrap that with a WhiteListPolicy which only has nodes 1, 3, and 5 in the white list, the order of the nodes from the DCAwareRoundRobinPolicy would be:
-
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 but then we would only keep the nodes in the white list, namely nodes 1, 3, and 5, and would not alter the order in any other way, resulting in this list:
 
-| 1 | 3 | 5 |   |   |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    5                                      
+```
 
 For the next query, the list would from the DCAwareRoundRobinPolicy would be:
 
-| 2 | 3 | 4 | 5 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    4    5    1                            
+```
 
 and again after applying the white list the resulting list would be:
 
-| 3 | 5 | 1 |   |   |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    5    1                                      
+```
 
 
 #### HostFilterPolicy
@@ -115,23 +121,27 @@ The HostFilterPolicy is a simple policy where you can specify a predicate functi
 
 For illustration purposes, let’s say that the predicate will return true for all nodes greater than “2” (so, nodes 3, 4, and 5) and false for other nodes. Then, if we use the DCAwareRoundRobinPolicy with DC1 as the child policy, the order of the nodes from the DCAwareRoundRobinPolicy would be:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 but then we would only keep nodes greater than 2, resulting in this list:
 
-| 3 | 4 | 5 |   |   |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    4    5                                      
+```
 
 or the next query, the list from the DCAwareRoundRobinPolicy would be:
 
-| 2 | 3 | 4 | 5 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    4    5    1                            
+```
 
 and again after applying the predicate the resulting list would be:
 
-| 3 | 4 | 5 |   |   |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    4    5                                      
+```
 
 
 #### TokenAwarePolicy
@@ -143,75 +153,87 @@ In the TokenAwarePolicy, the nodes that are the replicas for the given query are
 
 In any choice of the ordering, the replicas will be first in the list. For example, if we use DCAwareRoundRobinPolicy with DC1 as the child policy, then the order of the nodes from the child policy would be:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 Let us also presume that the ring order of the replicas was 1, 2, and 3.
 
 With the NEUTRAL ordering, the order of nodes would be:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 With the RANDOM ordering, the order of nodes would be:
 
-| 3 | 2 | 1 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    2    1    4    5                            
+```
 
 (Note: the ordering of the first 3 nodes in the list would be some permutation of the nodes 1, 2, and 3; the choice of 3, 2, and 1 was for illustrative purposes only).
 
 With the TOPOLOGICAL ordering, the order of the nodes would be:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 For the next call, the order of the nodes from the DCAwareRoundRobinPolicy would be:
 
-| 2 | 3 | 4 | 5 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    4    5    1                            
+```
 
 With the NEUTRAL ordering, the order of the nodes would be:
 
-| 2 | 3 | 1 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    1    4    5                            
+```
 
 Notice how node 1 moved from the end of the list to the third position.
 
 With the RANDOM ordering, the order of the nodes would be:
 
-| 1 | 3 | 2 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    2    4    5                            
+```
 
 Notice again how the three replicas move to the front of the list. (Note: the ordering of the first 3 nodes in the list would be some permutation of the nodes 1, 2, and 3; the choice of 1, 3, and 2 was for illustrative purposes only).
 
 With the TOPOLOGICAL ordering, the order of the nodes would be:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 Notice how the three replicas move to the front of the list, and they are in the natural ring order of the replicas.
 
 If the DCAwareRoundRobinPolicy returned the following order (just for illustrative purposes):
 
-| 5 | 1 | 3 | 2 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   5    1    3    2    4                            
+```
 
 then the NEUTRAL ordering would result in:
 
-| 1 | 3 | 2 | 5 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    2    5    4                            
+```
  
 the RANDOM ordering would result in:
  
-| 3 | 2 | 1 | 5 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    2    1    5    4                            
+```
 
 (Note: again we are using a random ordering of the replicas; here it is 3, 2, and 1 for illustrative purposes only).
 
 The TOPOLOGICAL ordering would result in:
 
-| 1 | 2 | 3 | 5 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    5    4                            
+```
 
 One thing to note about the TOPOLOGICAL choice is that the replicas will always be in the same order regardless of what a child policy has done to the order of the replicas. This can also create a hotspot for a hot token range since that first replica for that token range will always be chosen first. In general, across an even workload of primary keys, this is less of a concern, and only a concern if there is skew in the workload.
 
@@ -236,33 +258,39 @@ The order of the nodes, aside from moving slow nodes to the end of the list, is 
 
 For example, if we use DCAwareRoundRobinPolicy with DC1 as the child policy, and let us assume that nodes 4 and 1 are slow, then the order of the nodes from the child policy would be:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 then the resulting order from the LatencyAwarePolicy would be:
 
-| 2 | 3 | 5 | 1 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    5    1    4                            
+```
 
 For the next query, the order from DCAwareRoundRobinPolicy would be:
 
-| 2 | 3 | 4 | 5 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    4    5    1                            
+```
 
 and the resulting order from the LatencyAwarePolicy would be:
 
-| 2 | 3 | 5 | 4 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    5    4    1                            
+```
 
 For illustrative purposes, let’s consider the next query, where the order from DCAwareRoundRobinPoilcy would be:
 
-| 3 | 4 | 5 | 1 | 2 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    4    5    1    2                            
+```
 
 and the resulting order from the LatencyAwarePolicy would be:
 
-| 3 | 5 | 2 | 4 | 1 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    5    2    4    1                            
+```
 
 
 #### Order of Chained Policies
@@ -273,18 +301,21 @@ In this order, after the DCAwareRoundRobinPolicy removes all non-local nodes and
 
 So, if we use as an example DCAwareRoundRobinPolicy with DC1, and we use replicas 1, 2, and 3, and we say that node 2 and node 4 are currently slow, then the DCAwareRoundRobinPolicy would give the following order:
 
-| 4 | 1 | 3 | 2 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   4    1    3    2    5                            
+```
 
 the TokenAwarePolicy would move the replicas to the front of the list (let’s use NEUTRAL for the ordering):
 
-| 1 | 3 | 2 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    2    4    5                            
+```
 
 and the LatencyAwarePolicy would move the slow nodes to the end:
 
-| 1 | 3 | 5 | 4 | 2 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    5    4    2                            
+```
 
 Notice how one of the replicas, node 2, is not in the first 3 spots. In this ordering, node 5, a non-replica, would be preferred over node 2. This may be good, since node 2 is slow right now.
 
@@ -295,18 +326,21 @@ In this order, after the DCAwareRoundRobinPolicy removes all non-local nodes and
 
 So, using the same example, then the DCAwareRoundRobinPolicy would give the following order:
 
-| 4 | 1 | 3 | 2 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   4    1    3    2    5                            
+```
 
 the LatencyAwarePolicy would move the slow nodes to the end:
 
-| 1 | 3 | 5 | 4 | 2 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    5    4    2                            
+```
 
 and the TokenAwarePolicy would move the replicas to the front of the list (let’s use NEUTRAL for the ordering):
 
-| 1 | 3 | 2 | 5 | 4 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    3    2    5    4                            
+```
 
 Notice how node 2 is in the third spot, but is slow. On the third execution (second retry, for example), node 2, which is slow, would be chosen for the coordinator. This may not be good since node 2 is slow right now.
 
@@ -346,33 +380,39 @@ So, if we consider our 2-DC cluster and use:
 
 Then going through our process outlined above we would start by looking at all live nodes that are in the local data center:
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 Then we move all replicas to the front of the list (they’re already at the front, so this doesn’t actually do anything in this example):
 
-| 1 | 2 | 3 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   1    2    3    4    5                            
+```
 
 Then we randomly permute the replicas, leaving the non-replica order the same (for illustrative purposes, let’s say that the permutation of (1,2,3) is (3,1,2)):
 
-| 3 | 1 | 2 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    1    2    4    5                            
+```
 
 Since node 1 has been up for a while and is unhealthy, it is moved to the back of the list of replicas (spot 3). Node 4 has also been up for a while and is unhealthy, but since it is not a replica, it stays where it is:
 
-| 3 | 2 | 1 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   3    2    1    4    5                            
+```
 
 We now look at the first two nodes in the list (nodes 2 and 3) and order them so that the node with fewer outstanding requests is first. Since node 2 and node 3 have 20 and 30 outstanding requests, respectively, we put node 2 before node 3:
 
-| 2 | 3 | 1 | 4 | 5 |   |   |   |   |   |
-|---|---|---|---|---|---|---|---|---|---|
+```
+   2    3    1    4    5                            
+```
 
 The next call would have an identical path as above, but would have a different random permutation of replicas (for illustrative purposes, let’s assume the same permutation is used, namely (3,1,2)) and the non-replicas would rotate by one more, resulting in:
 
-| 2 | 3 | 1 | 5 | 4 |   |   |   |   |   |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+```
+   2    3    1    5    4                            
+```
 
 
 #### BasicLoadBalancingPolicy
