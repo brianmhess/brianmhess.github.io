@@ -1,8 +1,12 @@
 
 {% include header.html %}
+<hr>
 <div class="col-sm-8 blog-main">
     <div class="blog-post">
-        {{content}}
+        <h2 class="blog-post-title"> {{ page.title }} </h2>
+        <p class="blog-post-meta"> {{ page.date | date_to_long_string }} </p>
+
+        {{ content }}
     </div>
 
     {% if page.comments %}
